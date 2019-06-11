@@ -1,0 +1,34 @@
+{
+  "author": "Kaustubh",
+  "name": "get-me-boards",
+  "version": "0.0.1",
+  "description": "A message board service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "cors": "^2.8.5",
+    "body-parser": "^1.19.0",
+    "chai": "^4.2.0",
+    "mongodb": "^3.2.6",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.1.4",
+    "zombie": "^6.1.4",
+    "helmet": "^3.18.0"
+  },
+  "engines": {
+    "node": "11.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://api.glitch.com/git/get-me-boards"
+  },
+  "keywords": [
+    "node",
+    "hyperdev",
+    "express"
+  ],
+  "license": "MIT"
+}
