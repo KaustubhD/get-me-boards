@@ -4,7 +4,8 @@ const MONGODB_CONNECTION_STRING = process.env.DB
 
 function create(req, res){
   // res.send('Hey')
-  let { board, text, delete_password } = req.body
+  let board = req.body.board ? req.body.board : req.params.board
+  let { text, delete_password } = req.body
   console.log(req.body)
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
@@ -43,7 +44,7 @@ function create(req, res){
 
 
 function list(req, res){
-  let board = req.params.board
+  let board = req.body.board ? req.body.board : req.params.board
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
@@ -77,10 +78,8 @@ function list(req, res){
 
 function del(req, res){
   let { delete_password, thread_id } = req.body
-  let board = req.params.board
+  let board = req.body.board ? req.body.board : req.params.board
   
-  console.log(delete_password, thread_id)
-  console.log(board)
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
       console.error(err)
@@ -107,8 +106,33 @@ function del(req, res){
 }
 
 
+function report(req, res){
+  let { report_id } = req.body
+  let board = req.body.board ? req.body.board : req.params.board
+  
+  MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
+    if(err){
+      console.error(err)
+      return
+    }
+    db.db().collection(board)
+      .findOneAndUpdate(
+        {_id: ObjectId(report_id)},
+        {$set: {reported: true}},
+        {returnNewDocument: true}
+      )
+      .then(newDoc => {
+        if(newDoc.value.reported)
+          res.send('success')
+      })
+      .catch(err => res.status(400).json({err}))
+  })
+}
+
+
 module.exports = {
   create,
   list,
-  delete: del
+  delete: del,
+  report
 }
