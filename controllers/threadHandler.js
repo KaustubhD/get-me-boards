@@ -5,6 +5,7 @@ const MONGODB_CONNECTION_STRING = process.env.DB
 function create(req, res){
   // res.send('Hey')
   let { board, text, delete_password } = req.body
+  console.log(req.body)
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
@@ -26,7 +27,7 @@ function create(req, res){
             bumped_on: date,
             reported: false,
             replies: [],
-            replyCount: 0
+            replycount: 0
           }
           db.db().collection(board)
             .insertOne(obj)
@@ -42,14 +43,14 @@ function create(req, res){
 
 
 function list(req, res){
-  let { board, text, delete_password } = req.body
+  let board = req.params.board
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
       console.error(err)
       return
     }
-    console.log(board)
+    console.log(req.query)
     db.db().collection(board)
       .find({})
       .project({
@@ -63,7 +64,7 @@ function list(req, res){
       .toArray()
       .then(arr => {
         arr.forEach(th => {
-          if(th.replyCount > 3)
+          if(th.replycount > 3)
             th.replies = th.replies.slice(-3)
         })
         res.json(arr)
@@ -73,7 +74,41 @@ function list(req, res){
 }
 
 
+
+function del(req, res){
+  let { delete_password, thread_id } = req.body
+  let board = req.params.board
+  
+  console.log(delete_password, thread_id)
+  console.log(board)
+  MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
+    if(err){
+      console.error(err)
+      return
+    }
+    db.db().collection(board)
+      .findOne({_id: ObjectId(thread_id)})
+      .then(doc => {
+        if(doc){
+          if(doc.delete_password === delete_password)
+            db.db().collection(board)
+              .removeOne({_id: ObjectId(thread_id)})
+              .then(doc => res.send('success'))
+              .catch(err => res.status(400).json({err}))
+          else
+            res.send('Invalid password')
+        }
+        else{
+          res.send('No thread found')
+        }
+      })
+      .catch(err => res.status(400).json({err}))
+  })
+}
+
+
 module.exports = {
   create,
-  list
+  list,
+  delete: del
 }
