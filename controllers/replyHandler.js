@@ -2,7 +2,7 @@ var MongoClient = require('mongodb').MongoClient
 var ObjectId = require('mongodb').ObjectId
 const MONGODB_CONNECTION_STRING = process.env.DB
 
-// text, delete_password, & thread_id to /api/replies/{board}
+
 function post(req, res){
   let board = req.body.board ? req.body.board : req.params.board
   let { text, delete_password, thread_id } = req.body
@@ -12,7 +12,7 @@ function post(req, res){
       console.error(err)
       return
     }
-    // _id, text, created_on, delete_password, & reported
+    
     let date = new Date().toISOString()
     let obj = {
       _id: new ObjectId(),
@@ -28,10 +28,7 @@ function post(req, res){
         {$push: { replies: obj}, $set: { bumped_on: date}},
         {returnNewDocument: true}
       )
-      .then(newDoc => {
-        console.log(`/b/${board}/${thread_id}`)
-        res.redirect(`/b/${board}/${thread_id}`)
-      })
+      .then(newDoc => res.redirect(`/b/${board}/${thread_id}`))
       .catch(err => res.status(400).json({err}))      
   
   })
@@ -42,23 +39,21 @@ function list(req, res){
   let board = req.params.board
   let thread_id = req.query.thread_id
   
-  console.log(board, thread_id)
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
       console.error(err)
       return
     }
-    console.log(req.query)
     db.db().collection(board)
       .findOne(
         {_id: ObjectId(thread_id)},
-        {
+        {projection: {
           "delete_password": 0,
           "reported": 0,
           "replies.reported": 0,
           "replies.delete_password": 0
-        }
+        }}
       )
       .then(arr => {
         res.json(arr)
@@ -73,7 +68,7 @@ function del(req, res){
   let { thread_id, reply_id, delete_password } = req.body
   let board = req.params.board
   
-  // console.log(req.params, req.body)
+  
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
       console.error(err)
@@ -90,10 +85,10 @@ function del(req, res){
         }
       )
       .then(doc => {
-        if(doc)
+        if(doc.value)
           res.send('Success')
         else
-          res.send('Incorrect Password')
+          res.send('Incorrect password')
       })
       .catch(err => res.status(400).json({err}))
   })
@@ -114,7 +109,7 @@ function report(req, res){
       .findOneAndUpdate(
         {
           _id: ObjectId(thread_id),
-          replies: { $elemMatch: { _id: new ObjectId(reply_id)} }
+          replies: { $elemMatch: { _id: ObjectId(reply_id)} }
         },
         {
           $set: { "replies.$.reported": 'true'}

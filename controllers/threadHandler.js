@@ -3,10 +3,8 @@ var ObjectId = require('mongodb').ObjectId
 const MONGODB_CONNECTION_STRING = process.env.DB
 
 function create(req, res){
-  // res.send('Hey')
   let board = req.body.board ? req.body.board : req.params.board
   let { text, delete_password } = req.body
-  console.log(req.body)
   
   MongoClient.connect(MONGODB_CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
     if(err){
@@ -51,7 +49,6 @@ function list(req, res){
       console.error(err)
       return
     }
-    console.log(req.query)
     db.db().collection(board)
       .find({})
       .project({
@@ -86,20 +83,12 @@ function del(req, res){
       return
     }
     db.db().collection(board)
-      .findOne({_id: ObjectId(thread_id)})
+      .findOneAndDelete({_id: ObjectId(thread_id), delete_password})
       .then(doc => {
-        if(doc){
-          if(doc.delete_password === delete_password)
-            db.db().collection(board)
-              .removeOne({_id: ObjectId(thread_id)})
-              .then(doc => res.send('success'))
-              .catch(err => res.status(400).json({err}))
+        if(doc.value)
+          res.send('Success')
           else
-            res.send('Invalid password')
-        }
-        else{
-          res.send('No thread found')
-        }
+            res.send('Incorrect password')
       })
       .catch(err => res.status(400).json({err}))
   })
@@ -123,7 +112,7 @@ function report(req, res){
       )
       .then(newDoc => {
         if(newDoc.value.reported)
-          res.send('success')
+          res.send('Success')
       })
       .catch(err => res.status(400).json({err}))
   })

@@ -17,4 +17,4 @@ module.exports = function (app) {
     .get(replyHandler.list)
     .delete(replyHandler.del)
     .put(replyHandler.report)
-};
+}
