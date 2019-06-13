@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Message Board</title>
+    <meta name="description" content="A message board service">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/public/style.css">
+  </head>
+  <body>
+    <header>
+      <h1 id="boardTitle"></h1>
+    </header>
+    
+    <div id="submitNewThread">
+      <h3>Submit a new thread:</h3>
+      <form id="newThread" method="post" action="/api/">
+        <textarea rows="8" cols="120" type="text" placeholder="Thread text..." name="text" required></textarea><br>
+        <input type="text" placeholder="password to delete" name="delete_password" required><br>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+    
+    <div id="boardDisplay"></div>
+    
+    <hr style="margin: 50px; margin-top: 200px">
+    
+  </body>
+  <script src="/public/board.js"></script>
+</html>
